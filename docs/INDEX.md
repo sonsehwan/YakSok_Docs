@@ -30,19 +30,19 @@
 
 ## 현재 상태 (현재 상태 파일 — 자주 갱신됨)
 
-- [spec.md](spec.md) — 앱 전체 기능 명세 (안정적, 거의 안 바뀜)
-- [todo.md](todo.md) — 구현 예정 작업 목록
-- [tech-debt.md](tech-debt.md) — 알려진 이슈 / 기술 부채
+- [spec.md](spec.md) — 앱 전체 기능 명세(인증·약속·알림·공유·친구·채팅·약국·기술 스택). 2026-11-09 코드 기준으로 작성, 안정적이라 거의 안 바뀜
+- [todo.md](todo.md) — 구현 예정 작업 목록. 끝난 항목은 해당 장으로 옮겨 표시했고, 6.6에 진행 중인 작업을 모았다
+- [tech-debt.md](tech-debt.md) — 알려진 이슈 / 기술 부채(해결된 항목은 "해결됨"으로 남김)
 
 ## 진행 중 / 계획 (지금 관련 작업을 할 때만 열어볼 것)
 
 - [active/47-busy-buttons.md](active/47-busy-buttons.md) — 서버 통신 중 버튼 중복 클릭 방지(`BusyCallback`, `BaseActivity.busy`). Login만 적용, 나머지 29개 파일 남음
 
-- [active/45-next-tasks-queue.md](active/45-next-tasks-queue.md) — 다음 작업 큐 7개(쉬운 순): 이메일 인증 TTL 1분(시연), 회원가입 이메일 인증(구현됨, 46장), 회원정보 변경 알림, 친구 요청·채팅 푸시+실시간 갱신, 카카오 기존 회원 통합, AI 캐시. 항목별 출발점과 착수 전 결정할 것 정리
+- [active/45-next-tasks-queue.md](active/45-next-tasks-queue.md) — 다음 작업 큐. 45.1 이메일 인증 TTL 1분(시연용, 복구 남음)·45.2 회원가입 이메일 인증(46장)·45.4 친구 요청 푸시+실시간 갱신·45.5 채팅 푸시+실시간 갱신·45.6 카카오 기존 회원 연동은 완료, **45.3 회원정보 변경 알림·45.7 AI 캐시는 미착수**. 항목별 출발점과 착수 전 결정할 것, 구현 결정 기록
 
 - [active/42-chat-unread.md](active/42-chat-unread.md) — 채팅 안 읽은 메시지(목록 배지 + 방 안 구분선). 참여자별 `lastReadMessageId` 커서, `POST /read`가 옮기기 전 값을 돌려줘 진입 경로와 무관하게 구분선 계산. 서버·앱 구현, 실기기 확인 완료. 운영 DB 채우기 남음
 
-- [active/33-kakao-login.md](active/33-kakao-login.md) — 카카오 로그인 설계 확정, 백엔드 구현됨(앱 구현 중). OAuth + `app_id` 검증, User에 `social_type`/`social_id` 컬럼 + 로그인 수단 CHECK, 신규 가입은 카카오 토큰 재검증(가입용 토큰 없음)으로 역할·닉네임 선택, 이메일 충돌은 차단 + 연동 안내, 닉네임 유니크 제거. 기존 회원 연동(흐름 C) 서버·앱 구현됨 — 별도 카카오 계정은 거절 + 탈퇴 후 연동, `UserResponse.hasPassword` 추가, 연동 해제(비밀번호 없는 회원 거절), 로그인 화면 원형 심볼 버튼. 남음: 계정 복구 정리
+- [active/33-kakao-login.md](active/33-kakao-login.md) — 카카오 로그인. OAuth + `app_id` 검증, User에 `social_type`/`social_id` 컬럼 + 로그인 수단 CHECK, 신규 가입은 카카오 토큰 재검증(가입용 토큰 없음)으로 역할·닉네임 선택, 이메일 충돌은 차단 + 연동 안내, 닉네임 유니크 제거. 기존 회원 연동(흐름 C)·연동 해제·`UserResponse.hasPassword`·로그인 화면 원형 심볼 버튼까지 서버·앱 구현, 실기기 확인 완료. 남음: 아이디 찾기·비밀번호 재설정의 카카오 회원 처리, 탈퇴 시 카카오 연결 끊기(보류)
 
 ## 완료된 작업 (히스토리 — **관련 기능을 다시 만질 때만 열어볼 것**)
 

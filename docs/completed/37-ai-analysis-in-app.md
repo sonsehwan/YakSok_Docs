@@ -20,4 +20,7 @@
 - **약봉투에도 OCR 병행:** 처방전과 코드를 맞출 수 있지만 위 이유로 결과가 나아지지 않아 택하지 않았다.
 
 ## 남은 것
-- 앱 쪽 호출에서 API 키가 어떻게 보호되는지(Firebase 경유 여부)는 이 문서 작성 시 코드로 확인하지 못했다.
+- 앱 쪽 호출의 키 보호(2026-11-09 코드 확인): `FirebaseAI`의 `generativeModel("gemini-2.5-flash")`로 호출하고(`CreatePrescription`·
+  `CreatePaperEnvelope`), `MedicationApp`이 App Check(릴리즈 Play Integrity / 디버그 빌드 Debug provider)를 설치한다.
+  앱 코드와 `build.gradle.kts`에 Gemini API 키 문자열은 없다. 다만 Firebase 콘솔에서 App Check를 **강제**하는지는 코드로
+  확인할 수 없다.

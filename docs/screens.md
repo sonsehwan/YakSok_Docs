@@ -12,9 +12,9 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
 ### login
 
 ## 로그인 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/login/Login.java)
-- 목적: 아이디/비밀번호로 로그인하고 FCM 토큰을 등록하는 앱 진입 화면.
+- 목적: 아이디/비밀번호 또는 카카오로 로그인하고 FCM 토큰을 등록하는 앱 진입 화면.
 - 컴포넌트:
-  - 버튼: btn_login(로그인 실행)
+  - 버튼: btn_login(로그인 실행), btn_kakao_login(카카오 로그인 — 처음이면 SignUp_Kakao로)
   - 입력창: input_login_id(아이디), input_pw(비밀번호)
 - 화면 이동: 로그인 성공 시 MainActivity로 이동(기존 스택 제거). tv_go_signup 클릭 시 SignUpTypeBottomSheet(회원가입 유형 선택)를 띄움. tv_find_id 클릭 시 FindId, tv_find_pw 클릭 시 FindPassword로 이동. 이미 로그인돼 있으면 화면을 그리지 않고 바로 MainActivity로 보낸다.
 
@@ -48,7 +48,7 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
 - 화면 이동: 선택에 따라 SignUp_Normal 또는 SignUp_DrugStore로 이동.
 
 ## 일반 회원가입 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/signup/SignUp_Normal.java)
-- 목적: 일반 사용자 계정 정보를 입력받아 가입시키는 화면.
+- 목적: 일반 사용자 계정 정보를 입력받아 가입시키는 화면. 이메일은 인증코드(`verification_code`)로 소유를 확인해야 가입된다(46장).
 - 컴포넌트:
   - 버튼: btn_finish(회원가입 완료)
   - 입력창: input_login_id(아이디), input_email(이메일), input_pw(비밀번호), input_check_pw(비밀번호 확인), input_nickname(닉네임)
@@ -60,6 +60,13 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
   - 버튼: btn_find_drugstore(약국 검색), btn_sign_up(회원가입)
   - 입력창: input_login_id, input_email, input_pw, input_check_pw, input_nickname
 - 화면 이동: btn_find_drugstore 클릭 시 FindDrugStore를 sign_up 모드로 결과 대기 실행해 약국을 선택받는다. 가입 성공 시 Login으로 이동(스택 초기화).
+
+## 카카오 회원가입 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/signup/SignUp_Kakao.java)
+- 목적: 처음 카카오로 로그인한 사용자가 역할(일반/약국)과 닉네임을 정해 가입을 마치는 화면(33.13). 카카오 토큰·닉네임·이메일은 인텐트로 받는다.
+- 컴포넌트:
+  - 버튼: tv_role_normal/tv_role_drugstore(역할 선택), btn_find_drugstore(약국 회원일 때 소속 약국 검색), btn_sign_up(가입 완료)
+  - 입력창: input_nickname(닉네임), input_email(이메일)
+- 화면 이동: btn_find_drugstore 클릭 시 FindDrugStore를 결과 대기로 실행. 가입 성공 시 메인으로 이동. 이메일이 겹치면 서버가 가입을 막고 연동을 안내한다.
 
 ## 주소 검색 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/signup/AddressSearch.java)
 - 목적: 카카오 주소 검색 웹페이지를 WebView로 띄우고 자바스크립트 브릿지로 선택한 주소를 돌려받는 화면.
@@ -88,7 +95,7 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
 - 컴포넌트:
   - 버튼: iv_menu(드로어 열기), tv_my_yaksok/tv_shared_yaksok(내 약속 ↔ 공유 약속 탭 전환), fab_scan(약속 등록 방법 선택 바텀시트 열기)
   - 리스트: rv_share_user_list(나에게 약속을 공유해준 친구 목록, 가로 스크롤), rv_yaksok_list(내 약속 목록 또는 선택한 친구의 공유 약속 목록)
-- 화면 이동: 내 약속 항목 클릭 시 결과 대기로 YaksokDetail 실행. 공유 약속 항목 클릭 시 ShareYaksokDetail(이미 저장됨 모드)로 이동. fab_scan은 ShowAddMedicationList 바텀시트를 띄운다.
+- 화면 이동: 내 약속 항목 클릭 시 결과 대기로 YaksokDetail 실행. 공유 약속 항목 클릭 시 ShareYaksokDetail(이미 저장됨 모드)로 이동. fab_scan은 BottomSheetAddYaksok 바텀시트를 띄운다.
 
 ## 약속 상세(내 약속) (YaksokDetail.java, 경로: YakSok_Frontend/app/src/main/java/com/example/medication/ui/yaksok/YaksokDetail.java)
 - 목적: 내가 등록한 약속의 상세 정보를 읽기 전용으로 보여주고, 메뉴로 공유/수정/삭제를 제공하는 화면.
@@ -98,11 +105,16 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
   - 입력창: input_card_title, input_start_date, input_prescriptionDays, cb_morning/cb_lunch/cb_dinner, rg_dosage_time — 전부 읽기 전용으로 잠겨 있음
 - 화면 이동: 메뉴의 "수정"은 결과 대기로 ModifyYaksok 실행. "공유"는 친구 선택 다이얼로그 → 선택한 친구와의 채팅방(ChattingRoom)을 열며 공유 메시지를 함께 전송. "삭제"는 확인 다이얼로그 후 삭제하고 화면 종료.
 
-## 약속 등록 방법 선택 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/yaksok/ShowAddMedicationList.java)
+## 약속 등록 방법 선택 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/yaksok/BottomSheetAddYaksok.java)
 - 목적: 처방전 스캔/약봉투 스캔/직접 입력 중 약속 등록 방식을 고르는 바텀시트.
 - 컴포넌트:
   - 버튼: ll_create_prescription(처방전 등록), ll_create_medicine_envelope(약봉투 등록), ll_create_direct(직접 입력)
-- 화면 이동: 선택에 따라 CreatePrescription / CreatePaperEnvelope / CreateDirectSchedule로 이동.
+- 화면 이동: 선택에 따라 CreatePrescription / CreatePaperEnvelope / CreateDirectSchedule로 이동. (옛 이름 `ShowAddMedicationList`)
+
+## 사진 가져오는 방법 선택 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/yaksok/ImageSourceBottomSheet.java)
+- 목적: 처방전·약봉투 화면에 들어가면 먼저 뜨는 "카메라 / 앨범" 선택 바텀시트. 갤러리 선택, 카메라 촬영(FileProvider 임시 파일), `CAMERA` 권한 요청을 모두 이 클래스가 맡고 결과는 Fragment Result로 Uri만 넘긴다(43장).
+- 컴포넌트: (카메라 / 앨범 두 선택지. 권한을 거부하면 촬영은 진행하지 않는다)
+- 화면 이동: 선택한 사진의 Uri를 호출한 화면(CreatePrescription / CreatePaperEnvelope)에 돌려주고 닫는다.
 
 ## 처방전으로 약속 등록 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/yaksok/CreatePrescription.java)
 - 목적: 갤러리에서 고른 처방전 사진을 ML Kit OCR + Gemini AI로 분석해 약 정보를 자동 입력하고 약속을 등록하는 화면.
@@ -168,9 +180,9 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
   - 입력창: et_message(메시지 입력)
 - 화면 이동: 대화 중 약속 공유 메시지를 클릭하면 ShareYaksokDetail로 이동.
 
-### finddrugstore
+### drugstore
 
-## 약국 검색 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/finddrugstore/FindDrugStore.java)
+## 약국 검색 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/drugstore/FindDrugStore.java)
 - 목적: 지역(시/도·시군구)과 이름으로 약국을 검색해 선택하는 화면. 회원가입 중 약국 등록, 또는 내 정보에서 약국 변경 시 재사용된다.
 - 컴포넌트:
   - 버튼: iv_back(뒤로가기), btn_find_drugstore(조회)
@@ -178,14 +190,14 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
   - 입력창: sp_first_address(시/도 스피너), sp_second_address(시군구 스피너, 시/도 선택에 따라 갱신), et_drugstore_name(약국 이름, 선택 입력)
 - 화면 이동: 회원가입 중(sign_up 모드)이면 선택 결과를 RESULT_OK로 돌려주며 종료. 그 외(modify 모드)에는 선택한 약국으로 내 정보를 서버에 갱신한 뒤 MyInfo로 이동.
 
-## 인근 약국 목록 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/finddrugstore/DrugStoreList.java)
+## 인근 약국 목록 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/drugstore/DrugStoreList.java)
 - 목적: 현재 위치 기준으로 가까운 약국을 거리순으로 무한 스크롤 보여주는 화면(MainActivity 좌측 드로어에서 진입).
 - 컴포넌트:
   - 버튼: iv_back(뒤로가기)
   - 리스트: rv_drugstore_list(거리순 약국 목록, 스크롤이 바닥에 가까워지면 다음 페이지 자동 로드)
 - 화면 이동: 항목 클릭 시 DrugStoreDetail로 이동.
 
-## 약국 상세 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/finddrugstore/DrugStoreDetail.java)
+## 약국 상세 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/drugstore/DrugStoreDetail.java)
 - 목적: 선택한 약국의 정보(이름/주소/전화/영업시간)와 카카오맵 위치를 보여주고, 해당 약국과 채팅을 시작하는 화면.
 - 컴포넌트:
   - 버튼: btn_start_chatting(채팅 시작)
@@ -210,7 +222,7 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
   - 버튼: iv_qr(QR 팝업 메뉴 — "내 프로필"/"코드 스캔"), iv_add_friend(친구 추가 다이얼로그 열기),
     layout_friend_request(받은 요청 다이얼로그 열기)
   - 리스트: rv_yaksok_list(친구 목록, 길게 눌러 삭제)
-- 화면 이동: 친구 항목 클릭 시 (약속 공유 연동 기능이 아직 미완성이라) WipActivity로 이동.
+- 화면 이동: 친구 항목 클릭 시 프로필 다이얼로그(FRIEND 상태, "채팅하기")를 띄운다(31장). `WipActivity`로 가던 막다른 길은 없어졌다.
 - 참고: 친구 추가/받은 친구 요청/친구 길게 누르기(삭제)/내 QR 코드/QR로 알아낸 상대 프로필 —
   전부 별도 Activity/Fragment가 아닌 일반 Dialog라 이 목록에는 별도 항목으로 넣지 않았다.
 - **QR 진입점(구현됨).** 헤더 오른쪽에 `[iv_qr][iv_add_friend]` 순서로 아이콘 두 개. `iv_qr` 클릭 시
@@ -252,10 +264,15 @@ YakSok_Frontend의 모든 Activity/Fragment(바텀시트 포함)를 화면 단�
 ### common
 
 ## 준비 중 화면 (YakSok_Frontend/app/src/main/java/com/example/medication/ui/common/WipActivity.java)
-- 목적: 아직 구현되지 않은 기능으로 연결됐을 때 보여주는 공용 임시 화면(예: 친구 목록에서 약속 공유 기능).
+- 목적: 아직 구현되지 않은 기능으로 연결됐을 때 보여주는 공용 임시 화면. **현재 호출부가 없는 죽은 코드다**(31장에서 친구 목록의 연결을 걷어냈다).
 - 컴포넌트:
   - 버튼: button(돌아가기)
 - 화면 이동: button 클릭 시 이전 화면으로 복귀(finish).
+
+### drugstore 보조 클래스
+
+## BelowSpinner (YakSok_Frontend/app/src/main/java/com/example/medication/ui/drugstore/BelowSpinner.java)
+- 화면이 아니라 약국 검색의 시/도·시군구 선택에 쓰는 커스텀 Spinner. 기본 Spinner는 드롭다운이 앵커 위에서부터 겹쳐 뜨고 높이 제한을 못 걸어서, 앵커 바로 아래에 최대 10개 항목까지만 보이는 `ListPopupWindow`를 직접 띄운다.
 
 ### dialog
 
@@ -268,9 +285,9 @@ Flow 06(프로필·내 QR은 Flow 05)이다.
 - 버튼 순서는 안드로이드 기본과 같게 **취소가 왼쪽, 확인 동작이 오른쪽**이다.
 
 ## 친구 추가 (FriendListFragment.showAddFriendDialog, `dialog_add_friend.xml`)
-- 목적: 닉네임으로 사용자를 검색해 친구 요청을 보내는 다이얼로그. 친구 목록의 tv_add_friend로 연다.
+- 목적: 이메일로 사용자를 검색해 친구 요청을 보내는 다이얼로그. 친구 목록의 iv_add_friend로 연다.
 - 컴포넌트:
-  - 입력창: et_nickname(닉네임)
+  - 입력창: et_email(이메일 입력)
   - 버튼: btn_search(검색), btn_send_request(친구 요청 보내기 — 검색 결과 영역 layout_result 안, 결과가 있을 때만 노출)
 - 화면 이동: 요청 성공 시 다이얼로그를 닫는다. 검색 실패는 토스트만 띄운다.
 
@@ -291,8 +308,9 @@ Flow 06(프로필·내 QR은 Flow 05)이다.
 - 컴포넌트: (버튼/입력 없음. ProgressBar와 "분석 중입니다... 잠시만 기다려주세요." 문구)
 - 참고: 문구가 레이아웃에 고정돼 있어 약국 조회처럼 AI 분석이 아닌 곳에서도 "분석 중입니다"가 보인다.
 
-## 확인·액션 다이얼로그 (AlertDialog)
-제목·메시지·취소/확인 버튼만 있는 시스템 AlertDialog. 확인을 누르면 괄호 안 동작을 실행하고, 취소는 닫기만 한다.
+## 확인·액션 다이얼로그 (`AppDialog`)
+제목·메시지·취소/확인 버튼만 있는 카드형 확인 다이얼로그. 시스템 `AlertDialog`를 공통 헬퍼 `ui/common/AppDialog`
+(`confirm` / `deleteAction` / `popup` / `showBelow`)로 교체했다(26장). 목록의 `AlertDialog` 표기는 옛 이름이다. 확인을 누르면 괄호 안 동작을 실행하고, 취소는 닫기만 한다.
 - 복용 완료/취소 확인 — `NotificationMultiViewAdapter.showConfirmDialog` (홈의 cb_done). 제목은 상태에 따라 "복용 완료 처리하시겠습니까?"/"복용 취소 처리하시겠습니까?" (확인: 상태 반전 후 서버 반영, 실패 시 롤백)
 - 약속 삭제 — `YaksokDetail.showDeleteConfirmDialog` (메뉴 "삭제"). (삭제: 삭제 후 화면 종료)
 - 공유 목록에서 빼기 — `YaksokListFragment.showRemoveSharedConfirmDialog` (공유 약속 길게 누르기). (빼기: 원본은 두고 내 목록에서만 제거) — 죽은 코드인 `ShareYaksokList`에도 같은 다이얼로그가 있다.
@@ -309,4 +327,4 @@ Flow 06(프로필·내 QR은 Flow 05)이다.
 
 ## 팝업 메뉴 (PopupMenu)
 - 약속 상세 iv_menu — 공유/수정/삭제(`res/menu/yaksok_menu.xml`)
-- 친구 목록 QR 아이콘 — 내 프로필/코드 스캔 (계획, 미구현. 위 "친구 목록" 참고)
+- 친구 목록 QR 아이콘 — 내 프로필/코드 스캔 (구현됨, 17장. 위 "친구 목록" 참고)

@@ -8,8 +8,8 @@
 | **`ChatService.getOrCreateFriendRoom` 친구 미검증** → 해결 | 9장에서 `friendRelationRepository.existsById(new FriendRelationId(me, friend))`로 실제 친구일 때만 방 생성하도록 추가                                                                                                          | 해결됨   |
 | **서버 주소 하드코딩**             | `NetworkClient`에 EC2 IP가 박혀 있다. `gradle.properties` → `BuildConfig`로 분리 필요                                                                                                                                                                                   | 중간     |
 | **`users.fcm_token` 잔존**         | 엔티티 필드는 제거했지만 `ddl-auto: update`는 컬럼을 삭제하지 않아 DB에 남아 있다. 읽는 코드가 없어 무해. `ALTER TABLE users DROP COLUMN fcm_token;`                                                                                                                    | 낮음     |
-| **알림 id 네임스페이스 충돌**      | `showNotification()`이 서버 `Notification.id`를 안드로이드 알림 id로 그대로 쓰는데 REMINDER와 TAKEN_ALERT가 같은 id를 공유한다. 한쪽을 `cancel()`하면 다른 쪽이 지워진다                                                                                                | 낮음     |
-| **다른 기기 트레이 정리 안 됨**    | 기기 A에서 완료해도 기기 B 트레이에 REMINDER가 남는다. 정합성 문제는 없고(스케줄러가 `IsTakenFalse`만 발송, 서버가 중복 완료를 무시) 알림창이 지저분할 뿐. 하려면 위의 id 충돌을 먼저 풀어야 한다                                                                       | 낮음     |
+| **알림 id 네임스페이스 충돌** → 해결 | 복약·채팅·친구 알림이 같은 숫자 id를 공유해 서로 덮어쓰던 문제. `notify(tag, id)`의 tag를 알림 타입으로 줘서 분리하고, 복약 완료 버튼의 `cancel`도 같은 tag로 맞췄다(45.4). 업데이트 전에 뜬 알림은 tag가 null이라 예전처럼 동작한다 | 해결됨   |
+| **다른 기기 트레이 정리 안 됨**    | 기기 A에서 완료해도 기기 B 트레이에 REMINDER가 남는다. 정합성 문제는 없고(스케줄러가 `IsTakenFalse`만 발송, 서버가 중복 완료를 무시) 알림창이 지저분할 뿐. 선행 조건이던 id 충돌은 풀렸다(위 행). 아직 미착수                                                                    | 낮음     |
 | **알림 완료 요청에 재시도가 없음** | `goAsync()`로 프로세스 정리 문제는 막았지만(3.7), 네트워크가 끊긴 상태에서 누르면 그대로 실패한다. 사용자는 Toast를 볼 뿐이고 알림은 이미 지워져 다시 누를 수 없다. 재시도·재부팅까지 보장하려면 `WorkManager`가 필요하다                                               | 중간     |
 | **[약속 미루기]가 동작하지 않음** → 버튼 숨김 | `ACTION_SNOOZE`가 "10분 뒤에 다시 알려드릴게요" Toast만 띄우고 실제 재알림 예약을 하지 않는다. 가짜 동작이 노출되지 않도록 알림의 버튼을 주석 처리해 숨겼다(`MyFirebaseMessagingService`). 구현은 `todo.md` 6.3 | 보류(구현 대기) |
 | **탈퇴 시 채팅방 미정리** → 해결   | 9장에서 `UserService.deleteUser`가 유저 삭제 직전 `ChatService.handleUserWithdrawal` 호출: 내 참여자 행 삭제 → 그 방 참여자가 0명이면 방+메시지(벌크 delete)까지, 1명 이상이면 방 유지                     | 해결됨   |
@@ -24,3 +24,9 @@
 | **설정 화면 카드/스위치 색상이 디자인과 반대** → 해결 | `yaksok_design.pen`과 대조해 `bg_setting_item`(카드 배경 `g50`→`white`), 스위치 checked 트랙(`p100`→`p600`)·썸(`p600`→`white`)을 디자인대로 맞바꿈. 실기기 확인 완료 | 해결됨   |
 | **한 방에 USER·DRUGSTORE 참여자가 동시에 생길 수 있음** | 자기 약국 상담 금지는 방 생성 시점에만 검사한다. 고객으로 A약국에 상담한 뒤 A약국 사장으로 등록하면 같은 방에 두 참여자가 생기고, `ChatService.resolveMyParticipant`는 USER를 우선 반환한다. 사장 상담 탭에서 그 방을 읽어도 USER 쪽 커서만 옮겨져 상담 목록 배지가 안 지워진다(42장). 약국 등록 시 기존 상담방 검사로 막거나, 앱이 참여 자격을 명시하게 해야 함 | 낮음 |
 | **약속 수정 시 시간 null이면 일정 변경으로 오판 가능** | `YaksokService.updateYaksok`의 `isScheduleChanged`가 요청의 `timeMorning/Lunch/Dinner`를 저장값과 그대로 비교한다. 저장 시에는 빈 시간이 기본값("오전 08:00" 등)으로 채워지므로, 시간을 null/빈 값으로 보내면 알림이 재생성되고 진행도가 초기화된다. 앱이 수정 시 항상 시간을 채워 보내는지 미확인. 38장 | 낮음 |
+| **알림을 눌러도 해당 화면으로 이동하지 않음** | 채팅·`TAKEN_ALERT` 알림에 `contentIntent`가 없다. 복약·친구 알림도 눌렀을 때 목적 화면으로 가지 않는다. `MainActivity.EXTRA_TARGET_TAB`·`onNewIntent`는 있으나 앱이 꺼진 상태의 `Login` 시작 흐름과 이어붙이는 게 과제. 45.4·45.5 | 중간 |
+| **받은 요청 다이얼로그가 열린 동안 새 요청이 와도 목록은 그대로** | 뒤쪽 배지만 갱신되고 열려 있는 다이얼로그 목록은 다시 그려지지 않는다. 45.4 | 낮음 |
+| **채팅 과거 메시지와 STOMP 구독이 겹치면 같은 메시지가 두 번 보일 수 있음 / 앱 강제 종료 시 읽음 누락** | 전자는 `id`로 중복 제거 가능하나 드물어 보류, 후자는 다음 입장 때 바로잡힌다. 42장 | 낮음 |
+| **AI 분석이 서버를 거치지 않음** | 처방전·약봉투 분석은 앱이 Firebase AI SDK(`gemini-2.5-flash`)로 직접 호출하고 App Check로 앱을 인증한다. 서버에서 사용량 제한·호출 로그·모델 교체를 한곳에서 할 수는 없다(37장이 의도적으로 택한 트레이드오프). 콘솔의 App Check 강제 여부는 코드로 확인하지 못함 | 낮음 |
+| **이메일 인증 유효시간이 시연용 1분** | `EmailVerificationStore.TTL_MINUTES = 1`. 시연 후 5분으로 복구해야 하고, `main` push는 EC2로 즉시 배포된다(45.1) | 중간(복구 필요) |
+| **저장된 로그인 상태를 서버로 검증하지 않음** | `SprefsManager.isLoggedIn()`(로컬 boolean)만 보고 메인으로 진입한다. 다른 기기에서 탈퇴하거나 DB가 초기화돼도 앱은 로그인 상태로 남는다. `/me` 조회 API가 없다. `todo.md` 6.1 | 낮음 |
