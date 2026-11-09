@@ -14,8 +14,6 @@
 | [FCM 다기기 지원](docs/completed/02-fcm-multi-device.md) | 두 번째 기기 로그인 시 첫 기기 푸시 토큰이 덮어써지던 구조를 1:N으로 재설계. create-only가 왜 안전하지 않은지, 로그아웃 삭제에 정합성을 맡기지 않은 이유 |
 | [홈 알림이 사라지던 버그](docs/completed/19-notification-adapter-reattach-fix.md) | 처음 세운 '캐시 오염' 가설을 로그로 반증하고 Fragment 생명주기에서 진짜 원인을 찾은 과정 |
 
-JWT 도입 과정은 [블로그 글 4편](blog/JWT/)으로 더 길게 정리했습니다.
-
 ## 구조
 
 | 위치 | 내용 |
@@ -25,7 +23,6 @@ JWT 도입 과정은 [블로그 글 4편](blog/JWT/)으로 더 길게 정리했�
 | [docs/active/](docs/active/) | 진행 중이거나 계획 단계인 작업 |
 | [docs/spec.md](docs/spec.md) · [docs/screens.md](docs/screens.md) | 기능 명세 · 화면 인벤토리 |
 | [docs/tech-debt.md](docs/tech-debt.md) · [docs/todo.md](docs/todo.md) | 알려진 기술 부채 · 앞으로 할 일 |
-| [blog/](blog/) | 특정 작업을 길게 풀어 쓴 글 |
 
 ## 기록 원칙
 
